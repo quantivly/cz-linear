@@ -1,16 +1,19 @@
 # cz-linear
 
-A [Commitizen](https://commitizen-tools.github.io/commitizen/) plugin that implements Linear issue tracking conventions for commit messages.
+A [Commitizen](https://commitizen-tools.github.io/commitizen/) plugin that implements
+Linear issue tracking conventions for commit messages.
 
 ## Overview
 
 This plugin enforces the Linear commit message format:
-```
+
+```sh
 <ISSUE-ID> <Past-tense-verb> <description>
 ```
 
 Example:
-```
+
+```sh
 ENG-1234 Fixed authentication bug in login flow
 ```
 
@@ -37,6 +40,7 @@ pip install cz-linear
 ```
 
 Or with [pipx](https://pipx.pypa.io/) for isolated installation:
+
 ```bash
 pipx install commitizen
 pipx inject commitizen cz-linear
@@ -79,6 +83,7 @@ cz commit
 ```
 
 You'll be prompted for:
+
 1. Linear issue ID (e.g., ENG-123)
 2. Type of change (verb)
 3. Brief description
@@ -108,7 +113,7 @@ cz bump --dry-run
 
 Include `[bump:TYPE]` in your commit message to override automatic detection:
 
-```
+```sh
 ENG-999 Updated configuration handling
 
 This change modifies the config format and breaks backward compatibility.
@@ -120,15 +125,18 @@ This change modifies the config format and breaks backward compatibility.
 The plugin maps commit verbs to version increments:
 
 ### Major Version (Breaking Changes)
+
 - `Changed` - Indicates breaking changes
 
 ### Minor Version (New Features)
+
 - `Added` - New features or capabilities
 - `Created` - New components or resources
 - `Enhanced` - Significant improvements
 - `Implemented` - New implementations
 
 ### Patch Version (Bug Fixes & Maintenance)
+
 - `Fixed` - Bug fixes
 - `Updated` - Dependency or documentation updates
 - `Improved` - Performance or quality improvements
@@ -140,7 +148,8 @@ See the full list in the [source code](cz_linear/cz_linear.py).
 ## Commit Message Format
 
 ### Structure
-```
+
+```sh
 <ISSUE-ID> <Verb> <description>
 
 [optional body]
@@ -149,6 +158,7 @@ See the full list in the [source code](cz_linear/cz_linear.py).
 ```
 
 ### Rules
+
 - **Issue ID**: 2+ uppercase letters, dash, number (e.g., `ENG-123`, `PROJ-4567`)
 - **Verb**: Past-tense verb from the approved list
 - **Description**: Brief summary of the change
@@ -157,18 +167,18 @@ See the full list in the [source code](cz_linear/cz_linear.py).
 
 ### Examples
 
-```
+```sh
 BUG-123 Fixed null pointer exception in user service
 ```
 
-```
+```sh
 ENG-456 Added OAuth2 authentication support
 
 This adds support for GitHub and Google OAuth providers.
 Users can now sign in using their existing accounts.
 ```
 
-```
+```sh
 OPS-789 Changed database connection pooling
 
 [bump:major]
@@ -182,7 +192,7 @@ Validate commit messages using pre-commit:
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.0.0  # replace with latest version
+    rev: v3.0.0 # replace with latest version
     hooks:
       - id: commitizen
         stages: [commit-msg]
@@ -206,26 +216,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-          
+          python-version: "3.11"
+
       - name: Install dependencies
         run: |
           pip install commitizen cz-linear
-          
+
       - name: Check for release
         id: check_release
         run: |
           echo "current_version=$(cz version -p)" >> $GITHUB_OUTPUT
-          
+
       - name: Bump version
         run: |
           git config user.email "bot@example.com"
           git config user.name "Release Bot"
           cz bump --changelog --yes
-          
+
       - name: Push changes
         run: |
           git push
