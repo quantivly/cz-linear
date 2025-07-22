@@ -6,7 +6,11 @@ supporting commit messages in the format: <ISSUE-ID> <Past-tense-verb> <descript
 
 from __future__ import annotations
 
-from .cz_linear import LinearCz
-
 __version__ = "1.0.0"
-__all__ = ["LinearCz"]
+
+def __getattr__(name):
+    """Lazy import to avoid circular import issues."""
+    if name == "LinearCz":
+        from .cz_linear import LinearCz
+        return LinearCz
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
