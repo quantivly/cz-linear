@@ -58,6 +58,14 @@ class LinearCz(BaseCommitizen):
         "Upgraded": "PATCH",
         "Validated": "PATCH",
     }
+    
+    # Create verb group for pattern
+    _verb_group = "|".join(VERB_MAP.keys())
+    
+    # Class-level attributes for commitizen bump support
+    bump_pattern = rf"^[A-Z]{{2,}}-[0-9]+\s+({_verb_group})"
+    bump_map = VERB_MAP.copy()  # Keep uppercase for commitizen
+    bump_map_major_version_zero = bump_map  # Use same map for major version zero
 
     def __init__(self, config: BaseConfig) -> None:
         """Initialize the Linear Commitizen plugin.
@@ -74,11 +82,6 @@ class LinearCz(BaseCommitizen):
 
     def _setup_patterns(self) -> None:
         """Set up regex patterns for parsing and validation."""
-        # Create verb group from VERB_MAP keys
-        verb_group = "|".join(self.VERB_MAP.keys())
-
-        # Pattern for version bumping
-        self.bump_pattern = rf"^[A-Z]{{2,}}-[0-9]+\s+({verb_group})"
 
         # Pattern for changelog parsing
         self.changelog_pattern = self.bump_pattern
@@ -92,7 +95,7 @@ class LinearCz(BaseCommitizen):
         )
 
         # Compiled pattern for bump detection
-        self._bump_regex = re.compile(self.bump_pattern)
+        self._bump_regex = re.compile(self.__class__.bump_pattern)
 
     def questions(self) -> Iterable[CzQuestion]:
         """Interactive questions for creating commits.
