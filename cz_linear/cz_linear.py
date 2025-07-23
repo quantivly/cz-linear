@@ -20,6 +20,7 @@ INCREMENT_PRIORITY = {
     "MAJOR": 3,
     "MINOR": 2,
     "PATCH": 1,
+    "NONE": 0,
 }
 
 
@@ -46,7 +47,6 @@ class LinearCz(BaseCommitizen):
         "Configured": "PATCH",
         "Deprecated": "PATCH",
         "Disabled": "PATCH",
-        "Documented": "PATCH",
         "Downgraded": "PATCH",
         "Enabled": "PATCH",
         "Fixed": "PATCH",
@@ -64,6 +64,11 @@ class LinearCz(BaseCommitizen):
         "Updated": "PATCH",
         "Upgraded": "PATCH",
         "Validated": "PATCH",
+        # No version impact
+        "Documented": "NONE",
+        "Formatted": "NONE",
+        "Styled": "NONE",
+        "Commented": "NONE",
     }
 
     # Create verb group for pattern
