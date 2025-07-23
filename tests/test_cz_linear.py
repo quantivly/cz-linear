@@ -241,7 +241,7 @@ class TestLinearCz:
         schema = cz_linear.schema()
         assert "<ISSUE-ID>" in schema
         assert "<Verb>" in schema
-        assert "[bump:major|minor|patch]" in schema
+        assert "[bump:major|minor|patch|none]" in schema
 
     def test_info(self, cz_linear: LinearCz) -> None:
         """Test info output."""
