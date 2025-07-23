@@ -15,6 +15,14 @@ from commitizen.config.base_config import BaseConfig
 from commitizen.cz.base import BaseCommitizen
 from commitizen.question import CzQuestion
 
+# Define priority mapping for version increments
+INCREMENT_PRIORITY = {
+    "MAJOR": 3,
+    "MINOR": 2,
+    "PATCH": 1,
+    "NONE": 0,
+}
+
 
 class LinearCz(BaseCommitizen):
     """Commitizen plugin for Linear-style commit conventions.
@@ -39,7 +47,6 @@ class LinearCz(BaseCommitizen):
         "Configured": "PATCH",
         "Deprecated": "PATCH",
         "Disabled": "PATCH",
-        "Documented": "PATCH",
         "Downgraded": "PATCH",
         "Enabled": "PATCH",
         "Fixed": "PATCH",
@@ -57,11 +64,18 @@ class LinearCz(BaseCommitizen):
         "Updated": "PATCH",
         "Upgraded": "PATCH",
         "Validated": "PATCH",
+        # No version impact
+        "Commented": "NONE",
+        "Documented": "NONE",
+        "Formatted": "NONE",
+        "Replaced": "NONE",
+        "Reorganized": "NONE",
+        "Styled": "NONE",
     }
-    
+
     # Create verb group for pattern
     _verb_group = "|".join(VERB_MAP.keys())
-    
+
     # Class-level attributes for commitizen bump support
     bump_pattern = rf"^[A-Z]{{2,}}-[0-9]+\s+({_verb_group})"
     bump_map = VERB_MAP.copy()  # Keep uppercase for commitizen
@@ -91,7 +105,7 @@ class LinearCz(BaseCommitizen):
 
         # Compiled pattern for manual bump hints
         self._manual_bump_pattern = re.compile(
-            r"\[bump:(major|minor|patch)\]", re.IGNORECASE
+            r"\[bump:(major|minor|patch|none)\]", re.IGNORECASE
         )
 
         # Compiled pattern for bump detection
@@ -190,6 +204,7 @@ class LinearCz(BaseCommitizen):
         major_verbs = [v for v, t in self.VERB_MAP.items() if t == "MAJOR"]
         minor_verbs = [v for v, t in self.VERB_MAP.items() if t == "MINOR"]
         patch_verbs = [v for v, t in self.VERB_MAP.items() if t == "PATCH"]
+        none_verbs = [v for v, t in self.VERB_MAP.items() if t == "NONE"]
 
         # Add section headers and choices
         if major_verbs:
@@ -217,6 +232,12 @@ class LinearCz(BaseCommitizen):
             choices.extend(
                 {"name": f"{verb} - Bug fix/improvement", "value": verb}
                 for verb in sorted(patch_verbs)
+            )
+        if none_verbs:
+            choices.append({"name": "── Other Changes ──", "disabled": "section"})
+            choices.extend(
+                {"name": f"{verb} - No version impact", "value": verb}
+                for verb in sorted(none_verbs)
             )
 
         return choices
@@ -279,7 +300,7 @@ class LinearCz(BaseCommitizen):
             "\n"
             "[optional body]\n"
             "\n"
-            "[bump:major|minor|patch] (optional)"
+            "[bump:major|minor|patch|none] (optional)"
         )
 
     def info(self) -> str:
@@ -303,8 +324,8 @@ class LinearCz(BaseCommitizen):
             "- Minor (features): Added, Created, Enhanced, Implemented\n"
             "- Patch (fixes): Fixed, Updated, Improved, etc.\n"
             "\n"
-            "Manual bump override: Add [bump:major], [bump:minor], or [bump:patch]\n"
-            "to the commit body to override automatic detection."
+            "Manual bump override: Add [bump:major], [bump:minor], [bump:patch],\n"
+            "or [bump:none] to the commit body to override automatic detection."
         )
 
     def get_increment(self, commits: list[git.GitCommit]) -> str | None:
@@ -353,7 +374,8 @@ class LinearCz(BaseCommitizen):
         """
         match = self._manual_bump_pattern.search(message)
         if match:
-            return match.group(1).upper()
+            increment = match.group(1).upper()
+            return increment if increment != "NONE" else None
         return None
 
     def _get_increment_from_commit(self, message: str) -> str | None:
@@ -396,8 +418,9 @@ class LinearCz(BaseCommitizen):
         if not increments:
             return None
 
-        priority = {"MAJOR": 3, "MINOR": 2, "PATCH": 1}
-        increments_with_priority = [(priority.get(inc, 0), inc) for inc in increments]
+        increments_with_priority = [
+            (INCREMENT_PRIORITY.get(inc, 0), inc) for inc in increments
+        ]
         highest = max(increments_with_priority, key=lambda x: x[0])
 
         return highest[1] if highest[0] > 0 else None

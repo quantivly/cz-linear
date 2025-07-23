@@ -145,6 +145,15 @@ The plugin maps commit verbs to version increments:
 
 See the full list in the [source code](cz_linear/cz_linear.py).
 
+### No Version Impact
+
+- `Commented` - Code comments
+- `Documented` - Documentation changes
+- `Formatted` - Code formatting changes
+- `Replaced` - Code replacements
+- `Reorganized` - Code reorganization
+- `Styled` - Code styling changes
+
 ## Commit Message Format
 
 ### Structure
