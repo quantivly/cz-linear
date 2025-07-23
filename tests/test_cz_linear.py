@@ -126,6 +126,18 @@ class TestLinearCz:
             result = cz_linear._check_manual_bump(message)
             assert result == expected
 
+    def test_check_manual_bump_none(self, cz_linear: LinearCz) -> None:
+        """Test manual bump override with none."""
+        test_cases = [
+            ("ENG-123 Fixed bug\n\n[bump:none]", None),
+            ("ENG-123 Fixed bug\n\n[BUMP:NONE]", None),  # Case insensitive
+            ("ENG-123 Fixed bug\n\n[bump:None]", None),  # Mixed case
+        ]
+
+        for message, expected in test_cases:
+            result = cz_linear._check_manual_bump(message)
+            assert result == expected
+
     def test_determine_highest_increment(self, cz_linear: LinearCz) -> None:
         """Test determination of highest increment."""
         test_cases = [
