@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "Linear-style commit convention plugin for Commitizen"
 readme = "README.md"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Quantivly", email = "dev@quantivly.com"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -32,10 +32,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/cz-linear"
-Documentation = "https://github.com/yourusername/cz-linear#readme"
-"Bug Reports" = "https://github.com/yourusername/cz-linear/issues"
-Source = "https://github.com/yourusername/cz-linear"
+Homepage = "https://github.com/quantivly/cz-linear"
+Documentation = "https://github.com/quantivly/cz-linear#readme"
+"Bug Reports" = "https://github.com/quantivly/cz-linear/issues"
+Source = "https://github.com/quantivly/cz-linear"
 
 [project.entry-points."commitizen.plugin"]
 cz_linear = "cz_linear.cz_linear:LinearCz"
@@ -61,6 +61,8 @@ target-version = ['py38']
 
 [tool.ruff]
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -72,10 +74,12 @@ select = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+strict = true
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

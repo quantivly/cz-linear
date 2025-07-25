@@ -6,7 +6,6 @@ supporting the format: <ISSUE-ID> <Past-tense-verb> <description>
 
 from __future__ import annotations
 
-import re
 from collections.abc import Iterable, Mapping
 from typing import Any, cast
 
@@ -15,13 +14,25 @@ from commitizen.config.base_config import BaseConfig
 from commitizen.cz.base import BaseCommitizen
 from commitizen.question import CzQuestion
 
-# Define priority mapping for version increments
-INCREMENT_PRIORITY = {
-    "MAJOR": 3,
-    "MINOR": 2,
-    "PATCH": 1,
-    "NONE": 0,
-}
+from .constants import (
+    CHANGELOG_MESSAGE_FORMAT,
+    INCREMENT_PRIORITY,
+    PROMPT_BODY,
+    PROMPT_DESCRIPTION,
+    PROMPT_ISSUE_ID,
+    PROMPT_VERB,
+    SECTION_MAJOR,
+    SECTION_MINOR,
+    SECTION_NONE,
+    SECTION_PATCH,
+    VERB_DESC_MAJOR,
+    VERB_DESC_MINOR,
+    VERB_DESC_NONE,
+    VERB_DESC_PATCH,
+    VERB_MAP,
+)
+from .parser import CommitParser
+from .validators import validate_description, validate_issue_id
 
 
 class LinearCz(BaseCommitizen):
@@ -32,46 +43,6 @@ class LinearCz(BaseCommitizen):
 
     Example: ENG-1234 Fixed authentication bug in login flow
     """
-
-    # Verb mappings for version bumping
-    VERB_MAP: dict[str, str] = {
-        # Major version bumps (breaking changes)
-        "Changed": "MAJOR",
-        # Minor version bumps (new features)
-        "Added": "MINOR",
-        "Created": "MINOR",
-        "Enhanced": "MINOR",
-        "Implemented": "MINOR",
-        # Patch version bumps (bug fixes & maintenance)
-        "Bumped": "PATCH",
-        "Configured": "PATCH",
-        "Deprecated": "PATCH",
-        "Disabled": "PATCH",
-        "Downgraded": "PATCH",
-        "Enabled": "PATCH",
-        "Fixed": "PATCH",
-        "Improved": "PATCH",
-        "Integrated": "PATCH",
-        "Merged": "PATCH",
-        "Migrated": "PATCH",
-        "Optimized": "PATCH",
-        "Refactored": "PATCH",
-        "Released": "PATCH",
-        "Removed": "PATCH",
-        "Resolved": "PATCH",
-        "Reverted": "PATCH",
-        "Tested": "PATCH",
-        "Updated": "PATCH",
-        "Upgraded": "PATCH",
-        "Validated": "PATCH",
-        # No version impact
-        "Commented": "NONE",
-        "Documented": "NONE",
-        "Formatted": "NONE",
-        "Replaced": "NONE",
-        "Reorganized": "NONE",
-        "Styled": "NONE",
-    }
 
     # Create verb group for pattern
     _verb_group = "|".join(VERB_MAP.keys())
@@ -90,26 +61,17 @@ class LinearCz(BaseCommitizen):
             Configuration object from Commitizen
         """
         super().__init__(config)
+        self.parser = CommitParser()
         self._setup_patterns()
         # Set the changelog message builder hook
         self.changelog_message_builder_hook = self._changelog_message_builder_hook
 
     def _setup_patterns(self) -> None:
         """Set up regex patterns for parsing and validation."""
-
         # Pattern for changelog parsing
         self.changelog_pattern = self.bump_pattern
-
         # Pattern for commit parsing (captures issue ID and message)
-        self.commit_parser = r"^(?P<issue>[A-Z]{2,}-[0-9]+)\s+(?P<message>.*)$"
-
-        # Compiled pattern for manual bump hints
-        self._manual_bump_pattern = re.compile(
-            r"\[bump:(major|minor|patch|none)\]", re.IGNORECASE
-        )
-
-        # Compiled pattern for bump detection
-        self._bump_regex = re.compile(self.__class__.bump_pattern)
+        self.commit_parser = self.parser.commit_pattern.pattern
 
     def questions(self) -> Iterable[CzQuestion]:
         """Interactive questions for creating commits.
@@ -124,10 +86,10 @@ class LinearCz(BaseCommitizen):
                 CzQuestion,
                 {
                     "type": "input",
-                    "name": "issue",
-                    "message": "Linear issue ID (e.g., ENG-123):",
+                    "name": "issue_id",
+                    "message": PROMPT_ISSUE_ID,
                     "filter": lambda x: x.upper().strip(),
-                    "validate": self._validate_issue_id,
+                    "validate": validate_issue_id,
                 },
             ),
             cast(
@@ -135,7 +97,7 @@ class LinearCz(BaseCommitizen):
                 {
                     "type": "list",
                     "name": "verb",
-                    "message": "Select the type of change:",
+                    "message": PROMPT_VERB,
                     "choices": self._get_verb_choices(),
                 },
             ),
@@ -144,8 +106,8 @@ class LinearCz(BaseCommitizen):
                 {
                     "type": "input",
                     "name": "description",
-                    "message": "Brief description of the change:",
-                    "validate": self._validate_description,
+                    "message": PROMPT_DESCRIPTION,
+                    "validate": validate_description,
                 },
             ),
             cast(
@@ -153,42 +115,11 @@ class LinearCz(BaseCommitizen):
                 {
                     "type": "input",
                     "name": "body",
-                    "message": "Detailed description (optional). Press Enter to skip:",
+                    "message": PROMPT_BODY,
                 },
             ),
         ]
         return questions_list
-
-    def _validate_issue_id(self, issue_id: str) -> bool:
-        """Validate Linear issue ID format.
-
-        Parameters
-        ----------
-        issue_id : str
-            The issue ID to validate
-
-        Returns
-        -------
-        bool
-            True if valid, False otherwise
-        """
-        pattern = r"^[A-Z]{2,}-[0-9]+$"
-        return bool(re.match(pattern, issue_id.upper().strip()))
-
-    def _validate_description(self, description: str) -> bool:
-        """Validate commit description.
-
-        Parameters
-        ----------
-        description : str
-            The description to validate
-
-        Returns
-        -------
-        bool
-            True if valid, False otherwise
-        """
-        return len(description.strip()) >= 3
 
     def _get_verb_choices(self) -> list[dict[str, Any]]:
         """Get verb choices organized by version impact.
@@ -201,42 +132,36 @@ class LinearCz(BaseCommitizen):
         choices = []
 
         # Group verbs by their version impact
-        major_verbs = [v for v, t in self.VERB_MAP.items() if t == "MAJOR"]
-        minor_verbs = [v for v, t in self.VERB_MAP.items() if t == "MINOR"]
-        patch_verbs = [v for v, t in self.VERB_MAP.items() if t == "PATCH"]
-        none_verbs = [v for v, t in self.VERB_MAP.items() if t == "NONE"]
+        major_verbs = [v for v, t in VERB_MAP.items() if t == "MAJOR"]
+        minor_verbs = [v for v, t in VERB_MAP.items() if t == "MINOR"]
+        patch_verbs = [v for v, t in VERB_MAP.items() if t == "PATCH"]
+        none_verbs = [v for v, t in VERB_MAP.items() if t == "NONE"]
 
         # Add section headers and choices
         if major_verbs:
-            choices.append(
-                {"name": "── Breaking Changes (Major) ──", "disabled": "section"}
-            )
+            choices.append({"name": SECTION_MAJOR, "disabled": "section"})
             choices.extend(
-                {"name": f"{verb} - Breaking change", "value": verb}
+                {"name": f"{verb} - {VERB_DESC_MAJOR}", "value": verb}
                 for verb in sorted(major_verbs)
             )
 
         if minor_verbs:
-            choices.append(
-                {"name": "── New Features (Minor) ──", "disabled": "section"}
-            )
+            choices.append({"name": SECTION_MINOR, "disabled": "section"})
             choices.extend(
-                {"name": f"{verb} - New feature/capability", "value": verb}
+                {"name": f"{verb} - {VERB_DESC_MINOR}", "value": verb}
                 for verb in sorted(minor_verbs)
             )
 
         if patch_verbs:
-            choices.append(
-                {"name": "── Fixes & Maintenance (Patch) ──", "disabled": "section"}
-            )
+            choices.append({"name": SECTION_PATCH, "disabled": "section"})
             choices.extend(
-                {"name": f"{verb} - Bug fix/improvement", "value": verb}
+                {"name": f"{verb} - {VERB_DESC_PATCH}", "value": verb}
                 for verb in sorted(patch_verbs)
             )
         if none_verbs:
-            choices.append({"name": "── Other Changes ──", "disabled": "section"})
+            choices.append({"name": SECTION_NONE, "disabled": "section"})
             choices.extend(
-                {"name": f"{verb} - No version impact", "value": verb}
+                {"name": f"{verb} - {VERB_DESC_NONE}", "value": verb}
                 for verb in sorted(none_verbs)
             )
 
@@ -255,12 +180,12 @@ class LinearCz(BaseCommitizen):
         str
             Formatted commit message
         """
-        issue = answers["issue"].upper().strip()
+        issue_id = answers["issue_id"].upper().strip()
         verb = answers["verb"]
         description = answers["description"].strip()
         body = answers.get("body", "").strip()
 
-        message = f"{issue} {verb} {description}"
+        message = f"{issue_id} {verb} {description}"
 
         if body:
             message += f"\n\n{body}"
@@ -346,61 +271,18 @@ class LinearCz(BaseCommitizen):
 
         # Check for manual bump overrides first
         for commit in commits:
-            increment = self._check_manual_bump(commit.message)
+            increment = self.parser.extract_manual_bump(commit.message)
             if increment:
                 return increment
 
         # Use standard pattern matching
         increments = []
         for commit in commits:
-            increment = self._get_increment_from_commit(commit.message)
+            increment = self.parser.get_increment_from_message(commit.message)
             if increment:
                 increments.append(increment)
 
         return self._determine_highest_increment(increments)
-
-    def _check_manual_bump(self, message: str) -> str | None:
-        """Check for manual bump hints in commit message.
-
-        Parameters
-        ----------
-        message : str
-            Commit message to check
-
-        Returns
-        -------
-        str | None
-            "MAJOR", "MINOR", "PATCH", or None
-        """
-        match = self._manual_bump_pattern.search(message)
-        if match:
-            increment = match.group(1).upper()
-            return increment if increment != "NONE" else None
-        return None
-
-    def _get_increment_from_commit(self, message: str) -> str | None:
-        """Extract version increment from a single commit.
-
-        Parameters
-        ----------
-        message : str
-            Commit message to analyze
-
-        Returns
-        -------
-        str | None
-            "MAJOR", "MINOR", "PATCH", or None
-        """
-        # Extract first line for verb parsing
-        first_line = message.split("\n")[0]
-
-        # Try to match the pattern and extract verb
-        match = self._bump_regex.match(first_line)
-        if match:
-            verb = match.group(1)
-            return self.VERB_MAP.get(verb)
-
-        return None
 
     def _determine_highest_increment(self, increments: list[str]) -> str | None:
         """Determine the highest increment from a list.
@@ -442,14 +324,15 @@ class LinearCz(BaseCommitizen):
         dict[str, Any]
             Modified message data for changelog
         """
-        # If we have an issue ID, append it to the message
-        if "issue" in message:
+        # If we have an issue ID, format according to CHANGELOG_MESSAGE_FORMAT
+        if "issue_id" in message:
             original_msg = message.get("message", "")
-            issue_id = message["issue"]
+            issue_id = message["issue_id"]
 
-            # Check if issue ID is already in the message
-            if issue_id not in original_msg:
-                message["message"] = f"{original_msg} ({issue_id})"
+            # Apply the format: [{issue_id}] {message}
+            message["message"] = CHANGELOG_MESSAGE_FORMAT.format(
+                issue_id=issue_id, message=original_msg
+            )
 
         return message
 
