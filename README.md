@@ -32,7 +32,7 @@ ENG-1234 Fixed authentication bug in login flow
 
 ### Requirements
 
-- Python 3.8 or higher
+- Python 3.9 or higher
 - Git
 
 ### Install from PyPI

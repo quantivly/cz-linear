@@ -12,7 +12,12 @@ from typing import Any, cast
 from commitizen import git
 from commitizen.config.base_config import BaseConfig
 from commitizen.cz.base import BaseCommitizen
-from commitizen.question import CzQuestion
+
+try:
+    from commitizen.question import CzQuestion
+except ImportError:
+    # For older versions of commitizen or different environments
+    CzQuestion = dict[str, Any]  # type: ignore[misc]
 
 from .constants import (
     CHANGELOG_MESSAGE_FORMAT,
