@@ -20,17 +20,19 @@ ENG-1234 Fixed authentication bug in login flow
 ## Features
 
 - **Automatic version bumping** based on commit verbs (major/minor/patch)
-- **Interactive commit creation** with `cz commit`
-- **Linear issue ID validation** (e.g., ENG-123, BUG-456)
+- **Interactive commit creation** with guided prompts
+- **Linear issue ID validation** (e.g., ENG-123, TEA-456)
 - **Manual bump overrides** using `[bump:TYPE]` in commit messages
 - **Changelog generation** with Linear issue references
 - **Pre-commit hook support** for commit message validation
+- **Customizable verb mappings** (custom verbs take precedence over built-in ones)
+- **Configurable issue patterns** for different tracking systems
 
 ## Installation
 
 ### Requirements
 
-- Python 3.8 or higher
+- Python 3.9 or higher
 - Git
 
 ### Install from PyPI
@@ -72,6 +74,31 @@ version_files = [
 ]
 ```
 
+### Advanced Configuration
+
+```toml
+[tool.commitizen]
+name = "cz_linear"
+
+# Custom verb mappings (these take precedence over built-in verbs)
+[tool.commitizen.cz_linear]
+custom_verbs = {
+    "Deployed" = "PATCH",      # Adds new verb
+    "Changed" = "MINOR",       # Overrides built-in (normally MAJOR)
+    "Archived" = "NONE"        # No version bump
+}
+
+# Custom issue pattern (default: Linear format)
+# GitHub style: #123
+issue_pattern = "^#[0-9]+$"
+
+# JIRA style: PROJ-123
+# issue_pattern = "^[A-Z]+-[0-9]+$"
+
+# Custom format: TASK-2023-001
+# issue_pattern = "^TASK-[0-9]{4}-[0-9]{3}$"
+```
+
 ## Usage
 
 ### Interactive Commit
@@ -88,6 +115,26 @@ You'll be prompted for:
 2. Type of change (verb)
 3. Brief description
 4. Optional detailed description
+
+Example session:
+
+```sh
+$ cz commit
+
+Linear issue ID (e.g., ENG-123): ENG-456
+Select the type of change:
+  ── New Features (Minor) ──
+> Added - New feature/capability
+  Created - New feature/capability
+  Enhanced - New feature/capability
+
+Brief description of the change: user authentication with OAuth
+Detailed description (optional). Press Enter to skip:
+
+This adds support for GitHub and Google OAuth providers.
+
+[master 1a2b3c4] ENG-456 Added user authentication with OAuth
+```
 
 ### Version Bumping
 
@@ -141,18 +188,19 @@ The plugin maps commit verbs to version increments:
 - `Updated` - Dependency or documentation updates
 - `Improved` - Performance or quality improvements
 - `Refactored` - Code refactoring
-- And many more...
-
-See the full list in the [source code](cz_linear/cz_linear.py).
+- `Bumped`, `Configured`, `Deprecated`, `Disabled`, `Downgraded`
+- `Enabled`, `Integrated`, `Merged`, `Migrated`, `Optimized`
+- `Released`, `Removed`, `Resolved`, `Reverted`, `Tested`
+- `Upgraded`, `Validated`
 
 ### No Version Impact
 
 - `Commented` - Code comments
 - `Documented` - Documentation changes
-- `Formatted` - Code formatting changes
-- `Replaced` - Code replacements
-- `Reorganized` - Code reorganization
-- `Styled` - Code styling changes
+- `Formatted` - Code formatting
+- `Replaced` - Simple replacements
+- `Reorganized` - File/folder reorganization
+- `Styled` - Style changes
 
 ## Commit Message Format
 
@@ -170,15 +218,19 @@ See the full list in the [source code](cz_linear/cz_linear.py).
 
 - **Issue ID**: 2+ uppercase letters, dash, number (e.g., `ENG-123`, `PROJ-4567`)
 - **Verb**: Past-tense verb from the approved list
-- **Description**: Brief summary of the change
+- **Description**: Brief summary of the change (minimum 3 characters)
 - **Body**: Optional detailed explanation
 - **Manual bump**: Optional override for version detection
 
 ### Examples
 
+Basic commit:
+
 ```sh
 BUG-123 Fixed null pointer exception in user service
 ```
+
+With body:
 
 ```sh
 ENG-456 Added OAuth2 authentication support
@@ -186,6 +238,8 @@ ENG-456 Added OAuth2 authentication support
 This adds support for GitHub and Google OAuth providers.
 Users can now sign in using their existing accounts.
 ```
+
+With manual bump:
 
 ```sh
 OPS-789 Changed database connection pooling
@@ -201,7 +255,7 @@ Validate commit messages using pre-commit:
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.0.0 # replace with latest version
+    rev: v3.0.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
@@ -251,20 +305,29 @@ jobs:
           git push --tags
 ```
 
-## Development
+## Contributing
 
-### Setup Development Environment
+We welcome contributions! Here's how to get started:
+
+### Development Setup
 
 ```bash
-git clone https://github.com/yourusername/cz-linear.git
+git clone https://github.com/quantivly/cz-linear.git
 cd cz-linear
 pip install -e ".[dev]"
 ```
 
-### Run Tests
+### Running Tests
 
 ```bash
+# Run all tests
 pytest
+
+# With coverage
+pytest --cov=cz_linear
+
+# Run specific test file
+pytest tests/test_validators.py
 ```
 
 ### Code Quality
@@ -280,14 +343,35 @@ ruff check cz_linear tests
 mypy cz_linear
 ```
 
-### Building for Distribution
+### Making Changes
 
-```bash
-# Install build tools
-pip install build
+1. Fork the repository
+2. Create a feature branch: `git checkout -b user/linear-123-my-feature`
+3. Make your changes following the code style
+4. Run tests and quality checks
+5. Commit using the cz-linear format: `cz commit`
+6. Push and create a pull request
 
-# Build the package
-python -m build
+### Adding New Verbs
+
+To add a new verb:
+
+1. Add it to `VERB_MAP` in `cz_linear/constants.py`
+2. Choose the appropriate increment type
+3. Add tests for the new verb
+4. Update this README
+
+## Project Structure
+
+```sh
+cz_linear/
+├── __init__.py         # Package initialization
+├── cz_linear.py        # Main plugin class
+├── constants.py        # Verb mappings and constants
+├── validators.py       # Input validation functions
+├── parser.py          # Commit message parsing
+├── exceptions.py      # Custom exceptions
+└── config.py          # Configuration handling
 ```
 
 ## License

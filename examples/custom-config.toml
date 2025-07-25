@@ -1,0 +1,32 @@
+# Example configuration for cz-linear
+
+[tool.commitizen]
+name = "cz_linear"
+version = "1.0.0"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:version",
+    "src/__version__.py:__version__"
+]
+
+# Custom verb mappings (these override built-in mappings)
+[tool.commitizen.cz_linear]
+custom_verbs = {
+    "Deployed" = "PATCH",      # Add new verb
+    "Migrated" = "MINOR",      # Add new verb
+    "Archived" = "NONE",       # Add new verb
+    "Changed" = "MINOR"        # Override built-in (normally MAJOR)
+}
+
+# Custom issue pattern examples
+# Default Linear pattern: ABC-123
+issue_pattern = "^[A-Z]{2,}-[0-9]+$"
+
+# GitHub style: #123
+# issue_pattern = "^#[0-9]+$"
+
+# JIRA style: PROJ-123
+# issue_pattern = "^[A-Z]+-[0-9]+$"
+
+# Custom format: TASK-2023-001
+# issue_pattern = "^TASK-[0-9]{4}-[0-9]{3}$"

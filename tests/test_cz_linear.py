@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
 from unittest.mock import MagicMock, PropertyMock, patch
-from typing import cast, Any, Dict
 
 import pytest
-
 from commitizen import git
+
 from cz_linear.cz_linear import LinearCz
+from cz_linear.validators import validate_issue_id
 
 
 @pytest.fixture
@@ -56,9 +57,9 @@ class TestLinearCz:
         ]
 
         for issue_id in valid_ids:
-            assert cz_linear._validate_issue_id(issue_id) is True
+            assert validate_issue_id(issue_id) is True
             # Test case insensitivity
-            assert cz_linear._validate_issue_id(issue_id.lower()) is True
+            assert validate_issue_id(issue_id.lower()) is True
 
     def test_validate_issue_id_invalid(self, cz_linear: LinearCz) -> None:
         """Test validation of invalid issue IDs."""
@@ -73,7 +74,7 @@ class TestLinearCz:
         ]
 
         for issue_id in invalid_ids:
-            assert cz_linear._validate_issue_id(issue_id) is False
+            assert validate_issue_id(issue_id) is False
 
     def test_get_increment_from_commit_major(self, cz_linear: LinearCz) -> None:
         """Test major version increment detection."""
@@ -83,7 +84,7 @@ class TestLinearCz:
         ]
 
         for message in messages:
-            increment = cz_linear._get_increment_from_commit(message)
+            increment = cz_linear.parser.get_increment_from_message(message)
             assert increment == "MAJOR"
 
     def test_get_increment_from_commit_minor(self, cz_linear: LinearCz) -> None:
@@ -96,7 +97,7 @@ class TestLinearCz:
         ]
 
         for message in messages:
-            increment = cz_linear._get_increment_from_commit(message)
+            increment = cz_linear.parser.get_increment_from_message(message)
             assert increment == "MINOR"
 
     def test_get_increment_from_commit_patch(self, cz_linear: LinearCz) -> None:
@@ -109,7 +110,7 @@ class TestLinearCz:
         ]
 
         for message in messages:
-            increment = cz_linear._get_increment_from_commit(message)
+            increment = cz_linear.parser.get_increment_from_message(message)
             assert increment == "PATCH"
 
     def test_check_manual_bump(self, cz_linear: LinearCz) -> None:
@@ -123,7 +124,7 @@ class TestLinearCz:
         ]
 
         for message, expected in test_cases:
-            result = cz_linear._check_manual_bump(message)
+            result = cz_linear.parser.extract_manual_bump(message)
             assert result == expected
 
     def test_check_manual_bump_none(self, cz_linear: LinearCz) -> None:
@@ -135,7 +136,7 @@ class TestLinearCz:
         ]
 
         for message, expected in test_cases:
-            result = cz_linear._check_manual_bump(message)
+            result = cz_linear.parser.extract_manual_bump(message)
             assert result == expected
 
     def test_determine_highest_increment(self, cz_linear: LinearCz) -> None:
@@ -170,7 +171,7 @@ class TestLinearCz:
     def test_message_generation(self, cz_linear: LinearCz) -> None:
         """Test commit message generation from answers."""
         answers = {
-            "issue": "eng-123",  # Test uppercase conversion
+            "issue_id": "eng-123",  # Test uppercase conversion
             "verb": "Fixed",
             "description": "authentication bug",
             "body": "This resolves the timeout issue",
@@ -183,7 +184,7 @@ class TestLinearCz:
     def test_message_generation_no_body(self, cz_linear: LinearCz) -> None:
         """Test commit message generation without body."""
         answers = {
-            "issue": "BUG-456",
+            "issue_id": "BUG-456",
             "verb": "Added",
             "description": "new feature",
             "body": "",
@@ -197,8 +198,8 @@ class TestLinearCz:
         self, cz_linear: LinearCz, mock_commit: git.GitCommit
     ) -> None:
         """Test changelog message formatting."""
-        parsed_message: Dict[str, Any] = {
-            "issue": "ENG-123",
+        parsed_message: dict[str, Any] = {
+            "issue_id": "ENG-123",
             "message": "Fixed authentication bug",
         }
 
@@ -210,15 +211,15 @@ class TestLinearCz:
 
         # The hook should return a single dict, not an iterable
         assert isinstance(result, dict)
-        result_typed = cast(Dict[str, Any], result)
-        assert result_typed["message"] == "Fixed authentication bug (ENG-123)"
+        result_typed = cast(dict[str, Any], result)
+        assert result_typed["message"] == "[ENG-123] Fixed authentication bug"
 
     def test_changelog_message_builder_hook_no_duplicate(
         self, cz_linear: LinearCz, mock_commit: git.GitCommit
     ) -> None:
         """Test changelog formatting doesn't duplicate issue ID."""
-        parsed_message: Dict[str, Any] = {
-            "issue": "ENG-123",
+        parsed_message: dict[str, Any] = {
+            "issue_id": "ENG-123",
             "message": "Fixed bug in ENG-123",
         }
 
@@ -227,16 +228,16 @@ class TestLinearCz:
 
         result = hook(parsed_message, mock_commit)
 
-        # Should not add issue ID again
+        # Should always apply the format, even if issue ID is in the message
         assert isinstance(result, dict)
-        result_typed = cast(Dict[str, Any], result)
-        assert result_typed["message"] == "Fixed bug in ENG-123"
+        result_typed = cast(dict[str, Any], result)
+        assert result_typed["message"] == "[ENG-123] Fixed bug in ENG-123"
 
     def test_changelog_message_builder_hook_no_issue(
         self, cz_linear: LinearCz, mock_commit: git.GitCommit
     ) -> None:
         """Test changelog formatting when no issue is present."""
-        parsed_message: Dict[str, Any] = {"message": "Fixed authentication bug"}
+        parsed_message: dict[str, Any] = {"message": "Fixed authentication bug"}
 
         hook = cz_linear.changelog_message_builder_hook
         assert hook is not None, "Changelog message builder hook should be set"
@@ -245,7 +246,7 @@ class TestLinearCz:
 
         # Should return message unchanged when no issue
         assert isinstance(result, dict)
-        result_typed = cast(Dict[str, Any], result)
+        result_typed = cast(dict[str, Any], result)
         assert result_typed["message"] == "Fixed authentication bug"
 
     def test_schema(self, cz_linear: LinearCz) -> None:
