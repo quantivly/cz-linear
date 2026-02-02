@@ -17,7 +17,7 @@ try:
     from commitizen.question import CzQuestion
 except ImportError:
     # For older versions of commitizen or different environments
-    CzQuestion = dict[str, Any]  # type: ignore[misc]
+    CzQuestion = dict[str, Any]
 
 from .constants import (
     CHANGELOG_MESSAGE_FORMAT,
@@ -78,12 +78,12 @@ class LinearCz(BaseCommitizen):
         # Pattern for commit parsing (captures issue ID and message)
         self.commit_parser = self.parser.commit_pattern.pattern
 
-    def questions(self) -> Iterable[CzQuestion]:
+    def questions(self) -> list[CzQuestion]:
         """Interactive questions for creating commits.
 
         Returns
         -------
-        Iterable[CzQuestion]
+        list[CzQuestion]
             List of questions for the commit command
         """
         questions_list: list[CzQuestion] = [
