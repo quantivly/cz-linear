@@ -7,10 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Commitizen plugin called `cz-linear` that implements Linear issue tracking conventions for commit messages. The plugin enforces the format:
 
 ```
-<ISSUE-ID> <Past-tense-verb> <description>
+<ISSUE-ID> <Imperative-verb> <description>
 ```
 
-Example: `ENG-1234 Fixed authentication bug in login flow`
+Example: `ENG-1234 Fix authentication bug in login flow`
 
 ## Development Commands
 
@@ -64,11 +64,11 @@ The codebase follows a simple plugin architecture:
 ## Key Implementation Details
 
 ### Verb Mapping
-The plugin categorizes verbs into version bump types:
-- **MAJOR**: "Changed" (breaking changes)
-- **MINOR**: "Added", "Created", "Enhanced", "Implemented" (new features)
-- **PATCH**: "Fixed", "Updated", "Improved", etc. (bug fixes)
-- **NONE**: "Commented", "Documented", "Formatted", etc. (no version impact)
+The plugin categorizes verbs (imperative mood) into version bump types:
+- **MAJOR**: "Change" (breaking changes)
+- **MINOR**: "Add", "Create", "Enhance", "Implement" (new features)
+- **PATCH**: "Fix", "Update", "Improve", etc. (bug fixes)
+- **NONE**: "Comment", "Document", "Format", etc. (no version impact)
 
 ### Version Bumping Logic
 1. First checks for manual bump overrides (`[bump:TYPE]`)
@@ -93,5 +93,5 @@ Tests use pytest with mocking for commitizen dependencies. Key test areas:
 
 When working on Linear issues:
 - Branch naming: `user/aaa-1234-my-issue-description`
-- Commit format: `AAA-1234 <Verb> <description>`
-- PR title format: `AAA-#### Summary`
+- Commit format: `AAA-1234 <Imperative-verb> <description>` (e.g., "Add", "Fix", "Update")
+- PR title format: `AAA-#### Summary` (imperative mood, matching Linear issue titles)
