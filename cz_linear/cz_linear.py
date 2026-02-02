@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     try:
         from commitizen.question import CzQuestion
     except ImportError:
-        CzQuestion = dict[str, Any]  # type: ignore[misc]
+        CzQuestion = dict[str, Any]
 else:
     try:
         from commitizen.question import CzQuestion
     except ImportError:
         # For older versions of commitizen or different environments
-        CzQuestion = dict[str, Any]  # type: ignore[misc]
+        CzQuestion = dict[str, Any]
 
 from .constants import (
     CHANGELOG_MESSAGE_FORMAT,
