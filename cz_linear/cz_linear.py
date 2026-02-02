@@ -7,17 +7,23 @@ supporting the format: <ISSUE-ID> <Imperative-verb> <description>
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from commitizen import git
 from commitizen.config.base_config import BaseConfig
 from commitizen.cz.base import BaseCommitizen
 
-try:
-    from commitizen.question import CzQuestion
-except ImportError:
-    # For older versions of commitizen or different environments
-    CzQuestion = dict[str, Any]
+if TYPE_CHECKING:
+    try:
+        from commitizen.question import CzQuestion
+    except ImportError:
+        CzQuestion = dict[str, Any]  # type: ignore[misc]
+else:
+    try:
+        from commitizen.question import CzQuestion
+    except ImportError:
+        # For older versions of commitizen or different environments
+        CzQuestion = dict[str, Any]  # type: ignore[misc]
 
 from .constants import (
     CHANGELOG_MESSAGE_FORMAT,
