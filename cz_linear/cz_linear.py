@@ -1,12 +1,12 @@
 """Linear-style commit convention plugin for Commitizen.
 
 This plugin implements Linear issue tracking conventions for commit messages,
-supporting the format: <ISSUE-ID> <Past-tense-verb> <description>
+supporting the format: <ISSUE-ID> <Imperative-verb> <description>
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from typing import Any, cast
 
 from commitizen import git
@@ -44,16 +44,16 @@ class LinearCz(BaseCommitizen):
     """Commitizen plugin for Linear-style commit conventions.
 
     This plugin enforces and parses commit messages in the Linear format:
-    <ISSUE-ID> <Past-tense-verb> <description>
+    <ISSUE-ID> <Imperative-verb> <description>
 
-    Example: ENG-1234 Fixed authentication bug in login flow
+    Example: ENG-1234 Fix authentication bug in login flow
     """
 
     # Create verb group for pattern
     _verb_group = "|".join(VERB_MAP.keys())
 
     # Class-level attributes for commitizen bump support
-    bump_pattern = rf"^[A-Z]{{2,}}-[0-9]+\s+({_verb_group})"
+    bump_pattern = rf"^[A-Z]{{2,}}-[0-9]+\s+({_verb_group})\b"
     bump_map = VERB_MAP.copy()  # Keep uppercase for commitizen
     bump_map_major_version_zero = bump_map  # Use same map for major version zero
 
@@ -206,12 +206,12 @@ class LinearCz(BaseCommitizen):
             Example commit messages
         """
         return (
-            "ENG-1234 Fixed authentication bug in login flow\n"
-            "OPS-567 Added monitoring dashboard for API endpoints\n"
-            "BUG-890 Changed database schema to support multi-tenancy\n"
+            "ENG-1234 Fix authentication bug in login flow\n"
+            "OPS-567 Add monitoring dashboard for API endpoints\n"
+            "BUG-890 Change database schema to support multi-tenancy\n"
             "\n"
             "With manual bump:\n"
-            "ENG-999 Updated config handling\n"
+            "ENG-999 Update config handling\n"
             "\n"
             "This change requires a major version bump due to config format changes.\n"
             "[bump:major]"
@@ -233,6 +233,16 @@ class LinearCz(BaseCommitizen):
             "[bump:major|minor|patch|none] (optional)"
         )
 
+    def schema_pattern(self) -> str:
+        """Return the regex pattern for the commit schema.
+
+        Returns
+        -------
+        str
+            Regex pattern for commit validation
+        """
+        return self.bump_pattern
+
     def info(self) -> str:
         """Provide information about the commit rules.
 
@@ -244,15 +254,15 @@ class LinearCz(BaseCommitizen):
         return (
             "Linear-style commit format:\n"
             "\n"
-            "Format: <ISSUE-ID> <Past-tense-verb> <description>\n"
-            "Example: ENG-1234 Fixed authentication bug\n"
+            "Format: <ISSUE-ID> <Imperative-verb> <description>\n"
+            "Example: ENG-1234 Fix authentication bug\n"
             "\n"
             "Issue ID format: 2+ uppercase letters, dash, number (e.g., ENG-123)\n"
             "\n"
             "Version bumping:\n"
-            "- Major (breaking): Changed\n"
-            "- Minor (features): Added, Created, Enhanced, Implemented\n"
-            "- Patch (fixes): Fixed, Updated, Improved, etc.\n"
+            "- Major (breaking): Change\n"
+            "- Minor (features): Add, Create, Enhance, Implement\n"
+            "- Patch (fixes): Fix, Update, Improve, etc.\n"
             "\n"
             "Manual bump override: Add [bump:major], [bump:minor], [bump:patch],\n"
             "or [bump:none] to the commit body to override automatic detection."

@@ -16,7 +16,7 @@ class CommitParser:
         self.commit_pattern = re.compile(COMMIT_PARSER_PATTERN)
         self.manual_bump_pattern = re.compile(MANUAL_BUMP_PATTERN, re.IGNORECASE)
         self.verb_pattern = re.compile(
-            rf"^[A-Z]{{2,}}-[0-9]+\s+({'|'.join(VERB_MAP.keys())})"
+            rf"^[A-Z]{{2,}}-[0-9]+\s+({'|'.join(VERB_MAP.keys())})\b"
         )
 
     def parse_commit(self, message: str) -> dict[str, Any]:

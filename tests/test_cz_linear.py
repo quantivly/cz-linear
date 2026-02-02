@@ -79,8 +79,8 @@ class TestLinearCz:
     def test_get_increment_from_commit_major(self, cz_linear: LinearCz) -> None:
         """Test major version increment detection."""
         messages = [
-            "ENG-123 Changed API response format",
-            "BUG-456 Changed database schema",
+            "ENG-123 Change API response format",
+            "BUG-456 Change database schema",
         ]
 
         for message in messages:
@@ -90,10 +90,10 @@ class TestLinearCz:
     def test_get_increment_from_commit_minor(self, cz_linear: LinearCz) -> None:
         """Test minor version increment detection."""
         messages = [
-            "ENG-123 Added user authentication",
-            "BUG-456 Created new dashboard component",
-            "OPS-789 Enhanced monitoring capabilities",
-            "DEV-012 Implemented OAuth2 support",
+            "ENG-123 Add user authentication",
+            "BUG-456 Create new dashboard component",
+            "OPS-789 Enhance monitoring capabilities",
+            "DEV-012 Implement OAuth2 support",
         ]
 
         for message in messages:
@@ -103,10 +103,10 @@ class TestLinearCz:
     def test_get_increment_from_commit_patch(self, cz_linear: LinearCz) -> None:
         """Test patch version increment detection."""
         messages = [
-            "ENG-123 Fixed login bug",
-            "BUG-456 Updated dependencies",
-            "OPS-789 Improved performance",
-            "DEV-012 Refactored authentication module",
+            "ENG-123 Fix login bug",
+            "BUG-456 Update dependencies",
+            "OPS-789 Improve performance",
+            "DEV-012 Refactor authentication module",
         ]
 
         for message in messages:
@@ -116,11 +116,11 @@ class TestLinearCz:
     def test_check_manual_bump(self, cz_linear: LinearCz) -> None:
         """Test manual bump override detection."""
         test_cases = [
-            ("ENG-123 Fixed bug\n\n[bump:major]", "MAJOR"),
-            ("ENG-123 Fixed bug\n\n[bump:minor]", "MINOR"),
-            ("ENG-123 Fixed bug\n\n[bump:patch]", "PATCH"),
-            ("ENG-123 Fixed bug\n\n[BUMP:MAJOR]", "MAJOR"),  # Case insensitive
-            ("ENG-123 Fixed bug", None),  # No override
+            ("ENG-123 Fix bug\n\n[bump:major]", "MAJOR"),
+            ("ENG-123 Fix bug\n\n[bump:minor]", "MINOR"),
+            ("ENG-123 Fix bug\n\n[bump:patch]", "PATCH"),
+            ("ENG-123 Fix bug\n\n[BUMP:MAJOR]", "MAJOR"),  # Case insensitive
+            ("ENG-123 Fix bug", None),  # No override
         ]
 
         for message, expected in test_cases:
@@ -130,9 +130,9 @@ class TestLinearCz:
     def test_check_manual_bump_none(self, cz_linear: LinearCz) -> None:
         """Test manual bump override with none."""
         test_cases = [
-            ("ENG-123 Fixed bug\n\n[bump:none]", None),
-            ("ENG-123 Fixed bug\n\n[BUMP:NONE]", None),  # Case insensitive
-            ("ENG-123 Fixed bug\n\n[bump:None]", None),  # Mixed case
+            ("ENG-123 Fix bug\n\n[bump:none]", None),
+            ("ENG-123 Fix bug\n\n[BUMP:NONE]", None),  # Case insensitive
+            ("ENG-123 Fix bug\n\n[bump:None]", None),  # Mixed case
         ]
 
         for message, expected in test_cases:
@@ -162,7 +162,7 @@ class TestLinearCz:
             type(mock_commit),
             "message",
             new_callable=PropertyMock,
-            return_value="ENG-123 Fixed minor bug\n\n[bump:major]",
+            return_value="ENG-123 Fix minor bug\n\n[bump:major]",
         ):
             commits = [mock_commit]
             increment = cz_linear.get_increment(commits)
@@ -172,26 +172,26 @@ class TestLinearCz:
         """Test commit message generation from answers."""
         answers = {
             "issue_id": "eng-123",  # Test uppercase conversion
-            "verb": "Fixed",
+            "verb": "Fix",
             "description": "authentication bug",
             "body": "This resolves the timeout issue",
         }
 
         message = cz_linear.message(answers)
-        expected = "ENG-123 Fixed authentication bug\n\nThis resolves the timeout issue"
+        expected = "ENG-123 Fix authentication bug\n\nThis resolves the timeout issue"
         assert message == expected
 
     def test_message_generation_no_body(self, cz_linear: LinearCz) -> None:
         """Test commit message generation without body."""
         answers = {
             "issue_id": "BUG-456",
-            "verb": "Added",
+            "verb": "Add",
             "description": "new feature",
             "body": "",
         }
 
         message = cz_linear.message(answers)
-        expected = "BUG-456 Added new feature"
+        expected = "BUG-456 Add new feature"
         assert message == expected
 
     def test_changelog_message_builder_hook(
@@ -200,7 +200,7 @@ class TestLinearCz:
         """Test changelog message formatting."""
         parsed_message: dict[str, Any] = {
             "issue_id": "ENG-123",
-            "message": "Fixed authentication bug",
+            "message": "Fix authentication bug",
         }
 
         # The hook is assigned during initialization, so we call it directly
@@ -212,7 +212,7 @@ class TestLinearCz:
         # The hook should return a single dict, not an iterable
         assert isinstance(result, dict)
         result_typed = cast(dict[str, Any], result)
-        assert result_typed["message"] == "[ENG-123] Fixed authentication bug"
+        assert result_typed["message"] == "[ENG-123] Fix authentication bug"
 
     def test_changelog_message_builder_hook_no_duplicate(
         self, cz_linear: LinearCz, mock_commit: git.GitCommit
@@ -220,7 +220,7 @@ class TestLinearCz:
         """Test changelog formatting doesn't duplicate issue ID."""
         parsed_message: dict[str, Any] = {
             "issue_id": "ENG-123",
-            "message": "Fixed bug in ENG-123",
+            "message": "Fix bug in ENG-123",
         }
 
         hook = cz_linear.changelog_message_builder_hook
@@ -231,13 +231,13 @@ class TestLinearCz:
         # Should always apply the format, even if issue ID is in the message
         assert isinstance(result, dict)
         result_typed = cast(dict[str, Any], result)
-        assert result_typed["message"] == "[ENG-123] Fixed bug in ENG-123"
+        assert result_typed["message"] == "[ENG-123] Fix bug in ENG-123"
 
     def test_changelog_message_builder_hook_no_issue(
         self, cz_linear: LinearCz, mock_commit: git.GitCommit
     ) -> None:
         """Test changelog formatting when no issue is present."""
-        parsed_message: dict[str, Any] = {"message": "Fixed authentication bug"}
+        parsed_message: dict[str, Any] = {"message": "Fix authentication bug"}
 
         hook = cz_linear.changelog_message_builder_hook
         assert hook is not None, "Changelog message builder hook should be set"
@@ -247,7 +247,7 @@ class TestLinearCz:
         # Should return message unchanged when no issue
         assert isinstance(result, dict)
         result_typed = cast(dict[str, Any], result)
-        assert result_typed["message"] == "Fixed authentication bug"
+        assert result_typed["message"] == "Fix authentication bug"
 
     def test_schema(self, cz_linear: LinearCz) -> None:
         """Test schema output."""

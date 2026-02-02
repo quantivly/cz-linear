@@ -8,13 +8,13 @@ Linear issue tracking conventions for commit messages.
 This plugin enforces the Linear commit message format:
 
 ```sh
-<ISSUE-ID> <Past-tense-verb> <description>
+<ISSUE-ID> <Imperative-verb> <description>
 ```
 
 Example:
 
 ```sh
-ENG-1234 Fixed authentication bug in login flow
+ENG-1234 Fix authentication bug in login flow
 ```
 
 ## Features
@@ -124,16 +124,16 @@ $ cz commit
 Linear issue ID (e.g., ENG-123): ENG-456
 Select the type of change:
   ── New Features (Minor) ──
-> Added - New feature/capability
-  Created - New feature/capability
-  Enhanced - New feature/capability
+> Add - New feature/capability
+  Create - New feature/capability
+  Enhance - New feature/capability
 
 Brief description of the change: user authentication with OAuth
 Detailed description (optional). Press Enter to skip:
 
 This adds support for GitHub and Google OAuth providers.
 
-[master 1a2b3c4] ENG-456 Added user authentication with OAuth
+[master 1a2b3c4] ENG-456 Add user authentication with OAuth
 ```
 
 ### Version Bumping
@@ -161,7 +161,7 @@ cz bump --dry-run
 Include `[bump:TYPE]` in your commit message to override automatic detection:
 
 ```sh
-ENG-999 Updated configuration handling
+ENG-999 Update configuration handling
 
 This change modifies the config format and breaks backward compatibility.
 [bump:major]
@@ -173,34 +173,34 @@ The plugin maps commit verbs to version increments:
 
 ### Major Version (Breaking Changes)
 
-- `Changed` - Indicates breaking changes
+- `Change` - Indicates breaking changes
 
 ### Minor Version (New Features)
 
-- `Added` - New features or capabilities
-- `Created` - New components or resources
-- `Enhanced` - Significant improvements
-- `Implemented` - New implementations
+- `Add` - New features or capabilities
+- `Create` - New components or resources
+- `Enhance` - Significant improvements
+- `Implement` - New implementations
 
 ### Patch Version (Bug Fixes & Maintenance)
 
-- `Fixed` - Bug fixes
-- `Updated` - Dependency or documentation updates
-- `Improved` - Performance or quality improvements
-- `Refactored` - Code refactoring
-- `Bumped`, `Configured`, `Deprecated`, `Disabled`, `Downgraded`
-- `Enabled`, `Integrated`, `Merged`, `Migrated`, `Optimized`
-- `Released`, `Removed`, `Resolved`, `Reverted`, `Tested`
-- `Upgraded`, `Validated`
+- `Fix` - Bug fixes
+- `Update` - Dependency or documentation updates
+- `Improve` - Performance or quality improvements
+- `Refactor` - Code refactoring
+- `Bump`, `Configure`, `Deprecate`, `Disable`, `Downgrade`
+- `Enable`, `Integrate`, `Merge`, `Migrate`, `Optimize`
+- `Release`, `Remove`, `Resolve`, `Revert`, `Test`
+- `Upgrade`, `Validate`
 
 ### No Version Impact
 
-- `Commented` - Code comments
-- `Documented` - Documentation changes
-- `Formatted` - Code formatting
-- `Replaced` - Simple replacements
-- `Reorganized` - File/folder reorganization
-- `Styled` - Style changes
+- `Comment` - Code comments
+- `Document` - Documentation changes
+- `Format` - Code formatting
+- `Replace` - Simple replacements
+- `Reorganize` - File/folder reorganization
+- `Style` - Style changes
 
 ## Commit Message Format
 
@@ -217,7 +217,7 @@ The plugin maps commit verbs to version increments:
 ### Rules
 
 - **Issue ID**: 2+ uppercase letters, dash, number (e.g., `ENG-123`, `PROJ-4567`)
-- **Verb**: Past-tense verb from the approved list
+- **Verb**: Imperative verb from the approved list
 - **Description**: Brief summary of the change (minimum 3 characters)
 - **Body**: Optional detailed explanation
 - **Manual bump**: Optional override for version detection
@@ -227,13 +227,13 @@ The plugin maps commit verbs to version increments:
 Basic commit:
 
 ```sh
-BUG-123 Fixed null pointer exception in user service
+BUG-123 Fix null pointer exception in user service
 ```
 
 With body:
 
 ```sh
-ENG-456 Added OAuth2 authentication support
+ENG-456 Add OAuth2 authentication support
 
 This adds support for GitHub and Google OAuth providers.
 Users can now sign in using their existing accounts.
@@ -242,7 +242,7 @@ Users can now sign in using their existing accounts.
 With manual bump:
 
 ```sh
-OPS-789 Changed database connection pooling
+OPS-789 Change database connection pooling
 
 [bump:major]
 ```

@@ -43,9 +43,9 @@ class TestValidators:
     def test_validate_verb(self) -> None:
         """Test verb validation."""
         # Valid verbs
-        assert validate_verb("Fixed") is True
-        assert validate_verb("Added") is True
-        assert validate_verb("Changed") is True
+        assert validate_verb("Fix") is True
+        assert validate_verb("Add") is True
+        assert validate_verb("Change") is True
 
         # Invalid verbs
         assert validate_verb("Fixing") is False
@@ -55,11 +55,11 @@ class TestValidators:
     def test_validate_commit_message(self) -> None:
         """Test complete commit message validation."""
         # Valid messages
-        valid, error = validate_commit_message("ENG-123 Fixed authentication bug")
+        valid, error = validate_commit_message("ENG-123 Fix authentication bug")
         assert valid is True
         assert error is None
 
-        valid, error = validate_commit_message("BUG-456 Added new feature with spaces")
+        valid, error = validate_commit_message("BUG-456 Add new feature with spaces")
         assert valid is True
         assert error is None
 
@@ -69,12 +69,12 @@ class TestValidators:
         assert "Empty commit message" in error
 
         # Missing parts
-        valid, error = validate_commit_message("ENG-123 Fixed")
+        valid, error = validate_commit_message("ENG-123 Fix")
         assert valid is False
         assert "expected '<ISSUE-ID> <Verb> <description>'" in error
 
         # Invalid issue ID
-        valid, error = validate_commit_message("E-123 Fixed bug")
+        valid, error = validate_commit_message("E-123 Fix bug")
         assert valid is False
         assert "Invalid issue ID format" in error
 
@@ -84,30 +84,30 @@ class TestValidators:
         assert "Invalid verb" in error
 
         # Description too short
-        valid, error = validate_commit_message("ENG-123 Fixed a")
+        valid, error = validate_commit_message("ENG-123 Fix a")
         assert valid is False
         assert "Description too short" in error
 
     def test_suggest_verb(self) -> None:
         """Test verb suggestion functionality."""
         # Partial matches
-        assert "Fixed" in suggest_verb("fix")
-        assert "Added" in suggest_verb("add")
-        assert "Created" in suggest_verb("cre")
+        assert "Fix" in suggest_verb("fix")
+        assert "Add" in suggest_verb("add")
+        assert "Create" in suggest_verb("cre")
 
         # Multiple matches
         suggestions = suggest_verb("re")
-        assert "Refactored" in suggestions
-        assert "Released" in suggestions
-        assert "Removed" in suggestions
-        assert "Resolved" in suggestions
-        assert "Reverted" in suggestions
-        assert "Replaced" in suggestions
-        assert "Reorganized" in suggestions
+        assert "Refactor" in suggestions
+        assert "Release" in suggestions
+        assert "Remove" in suggestions
+        assert "Resolve" in suggestions
+        assert "Revert" in suggestions
+        assert "Replace" in suggestions
+        assert "Reorganize" in suggestions
 
         # No matches
         assert suggest_verb("xyz") == []
 
         # Case insensitive
-        assert "Fixed" in suggest_verb("FIX")
-        assert "Fixed" in suggest_verb("Fix")
+        assert "Fix" in suggest_verb("FIX")
+        assert "Fix" in suggest_verb("Fix")
