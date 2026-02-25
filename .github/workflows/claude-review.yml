@@ -22,5 +22,5 @@ jobs:
       contains(github.event.comment.body, '@claude')
 
     # Call the centralized reusable workflow from the .github organization repository
-    uses: quantivly/.github/.github/workflows/claude-review.yml@master
+    uses: quantivly/ci/.github/workflows/claude-review.yml@master
     secrets: inherit  # Pass all organization secrets to the reusable workflow
